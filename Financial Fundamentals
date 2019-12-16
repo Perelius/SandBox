@@ -1,0 +1,42 @@
+###############################################################################################################
+# The code will scrap the site Macrotrend and get the las 10 years of statements and Financial Ratios.
+# Each statement will stored in a dataframe. Parameters are: Ticker,name as it appear in Macrotrend.
+# Example : https://www.macrotrends.net/stocks/charts/AVGO/broadcom/financial-ratios 
+##Ticker = AVGO
+##Name = broadcom
+###############################################################################################################
+import requests
+from bs4 import BeautifulSoup as bs
+import re
+import json
+import pandas as pd
+
+def GetFundamentals(ticker,name,statement):
+
+
+
+    r = requests.get('https://www.macrotrends.net/stocks/charts/' +ticker+ '/'+name+ '/'+statement+ '?freq=A')
+    p = re.compile(r' var originalData = (.*?);\r\n\r\n\r',re.DOTALL)
+    data = json.loads(p.findall(r.text)[0])
+    headers = list(data[0].keys())
+    headers.remove('popup_icon')
+    result = []
+
+    for row in data:
+        soup = bs(row['field_name'])
+        field_name = soup.select_one('a, span').text
+        fields = list(row.values())[2:]
+        fields.insert(0, field_name)
+        result.append(fields)
+
+    pd.option_context('display.max_rows', None, 'display.max_columns', None)
+    df = pd.DataFrame(result, columns = headers) 
+    return df
+        
+#Balances = ['balance-sheet','income-statement','cash-flow-statement','cash-financial-ratios']
+
+
+df_balance_sheet = GetFundamentals('AVGO','broadcom','balance-sheet')
+df_income_statement = GetFundamentals('AVGO','broadcom','income-statement')
+df_balance_sheet = GetFundamentals('AVGO','broadcom','cash-flow-statement')
+df_ratios = GetFundamentals('AVGO','broadcom','cash-financial-ratios')
