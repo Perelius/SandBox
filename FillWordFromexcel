@@ -1,0 +1,26 @@
+from __future__ import print_function
+from mailmerge import MailMerge
+from datetime import date
+import pandas as pd
+
+#Load Template
+template = r"C:\TESTPy.docx"
+
+#Check Mail Merges
+document = MailMerge(template)
+print(document.get_merge_fields())
+
+#Get Excel values
+df = pd.read_excel(r"C:\ExcelPy.xlsx")
+fillers = dict(zip(df.par,df.VALUE))
+
+#Fill Mail Merge and Generate Output
+
+
+document.merge(
+    TEST1= str(fillers['TEST1']),
+    TEST2= fillers['TEST2'],
+    TEST3= fillers['TEST3'],
+    TEST4= str(fillers['TEST4']))
+
+document.write(r'C:\test-output.docx')
