@@ -80,4 +80,51 @@ Max_Performance = Max_Performance[["Type","Total Return"]]
 Min_perfomance = Min_perfomance[["Type","Total Return"]]
 
 
+#Backtest Portfolio Vs Market
+
+#Define Frames and Multiply the weight of each stock and calculate the cummulative return of bothe portfolios
+
+dfmax= max_sharpe_port.to_frame().T
+dfmin= min_vol_port.to_frame().T
+
+final_df = pd.DataFrame(returns.values * dfmax[['GGAL','PAM','MELI','CRESY']].values,columns=returns.columns,index=returns.index)
+feardf = pd.DataFrame(returns.values * dfmin[['GGAL','PAM','MELI','CRESY']].values,columns=returns.columns,index=returns.index)
+final_df["Portfolio Returns"]=final_df.sum(axis=1) 
+feardf["Portfolio Returns"]=feardf.sum(axis=1) 
+portfolio_df = final_df[["Portfolio Returns"]]
+portfolio2_df = feardf[["Portfolio Returns"]]
+
+CumulativeReturns = (((1+portfolio_df["Portfolio Returns"]).cumprod()-1))*100
+CumulativeReturns2 = (((1+portfolio2_df["Portfolio Returns"]).cumprod()-1))*100
+CumulativeReturns.plot()
+CumulativeReturns2.plot()
+plt.show()
+
+CumulativeReturns
+CumulativeReturns2
+
+#Get IMV Data. Calculate Cummulative returns and compare.
+
+# Merval
+tickers = ['^MERV']
+
+# Cota de tiempo
+start_date = '01/01/2015'
+end_date = datetime.today().strftime('%Y-%m-%d')
+
+# Traer datos desde Yahoo Financ
+panel_data = web.DataReader(tickers,data_source='yahoo',start='01/01/2015')
+#Definir close pirce
+close = panel_data['Adj Close']
+close= close.rename(columns={'^MERV': "IMV"})
+Returns_IVM = close.pct_change()
+
+CumulativeReturnsIMV.plot(color = 'red',label='IMV')
+CumulativeReturns.plot(color = 'blue',label='High Sharpe')
+CumulativeReturns2.plot(color ='green',label='Low Risk')
+plt.legend()
+plt.show()
+print(CumulativeReturnsIMV.iloc[-1],"To date IMV Return")
+print(CumulativeReturns.iloc[-1],"To date Riskier Portfolio Return")
+print(CumulativeReturns2.iloc[-1],"To date Lower Risk Return")
 
